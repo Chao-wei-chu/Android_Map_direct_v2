@@ -226,7 +226,8 @@ public class MainActivity extends FragmentActivity implements Runnable {
     static LatLng init_point = new LatLng(23.696136, 120.534142);
     static boolean direct_flag=false;
     static View DirectbuttonView;  //畫地圖用的view物件
-
+    static boolean parkingauto=false;
+    static boolean modechange=false;
 
     @SuppressLint("NewApi")
     @Override
@@ -267,6 +268,11 @@ public class MainActivity extends FragmentActivity implements Runnable {
             checkdirectbutton.setOnClickListener(new check_Direct());
             Button autodirectbutton=(Button)findViewById(R.id.autodirect);
             autodirectbutton.setOnClickListener(new auto_Direct());
+            Button parkingauto=(Button)findViewById(R.id.parkingauto);
+            parkingauto.setOnClickListener(new Parking_auto());
+            Button ModeChange=(Button)findViewById(R.id.parkingmode);
+            ModeChange.setOnClickListener(new Parking_Mode_Change());
+
 
             map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
             LatLng latLng=new LatLng(23.696136, 120.534142);
@@ -400,13 +406,38 @@ public class MainActivity extends FragmentActivity implements Runnable {
             }
         }
     }
+    public class Parking_auto implements Button.OnClickListener{
+        @Override
+        public void onClick(View v) {
+            parkingauto=true;
+            End_Position=new LatLng(23.712313, 120.542941);
+            init_point=new LatLng(23.711891, 120.542352);
+            MaintainNavigation();
+            Test_index = 0;
+            MyHandlerTime.postDelayed(TestTimerRun, 1000);
+        }
+    }
+
+    public static final int resultNum = 0;
+    public class Parking_Mode_Change implements Button.OnClickListener{
+        @Override
+        public void onClick(View v) {
+            if(modechange){
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, ParkingMain.class);
+                startActivityForResult(intent, resultNum);
+            }else{
+                Toast.makeText(MainActivity.this,"Not in park",Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
     //模擬導航所需之Timer設定
     private final Runnable TestTimerRun = new Runnable()
     {
         public void run()
         {
-            MyHandlerTime.postDelayed(this, 3000);
+            MyHandlerTime.postDelayed(this, 1000);
             if((Test_index+1) <= latlngpath.size())
             {
                 //逐步前進與測試繪畫
@@ -416,7 +447,7 @@ public class MainActivity extends FragmentActivity implements Runnable {
                 markerOptions.position(init_point);
                 markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car_m));
                 map.addMarker(markerOptions);
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(init_point,17));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(init_point,16));
 
                 Test_index++;
             }
@@ -425,6 +456,10 @@ public class MainActivity extends FragmentActivity implements Runnable {
                 direct_flag = false;
                 MyHandlerTime.removeCallbacks(this);
                 Toast.makeText(getApplicationContext(), "到達，結束模擬導航!", Toast.LENGTH_SHORT).show();
+                if(parkingauto){
+                    Toast.makeText(MainActivity.this,"Parking Mode Start",Toast.LENGTH_SHORT).show();
+                    modechange=true;
+                }
             }
         }
     };

@@ -25,6 +25,10 @@
             android:name="Navigation"
             android:label="@string/app_name">
         </activity>
+        <activity
+            android:name="ParkingMain"
+            android:label="@string/app_name">
+        </activity>
         <activity android:name=".MainActivity">
 
             <intent-filter>
