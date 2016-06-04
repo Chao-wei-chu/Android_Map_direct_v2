@@ -426,6 +426,7 @@ public class MainActivity extends FragmentActivity implements Runnable {
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, ParkingMain.class);
                 startActivityForResult(intent, resultNum);
+                MainActivity.this.finish();
             }else{
                 Toast.makeText(MainActivity.this,"Not in park",Toast.LENGTH_SHORT).show();
             }
