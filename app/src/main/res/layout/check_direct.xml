@@ -28,7 +28,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/parkingauto"
-                android:hint="停車場導航"
+                android:hint="選擇停車場導航(請長按)"
                 />
             <Button
                 android:layout_width="match_parent"

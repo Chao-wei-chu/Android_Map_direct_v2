@@ -22,9 +22,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -248,7 +250,7 @@ public class MainActivity extends FragmentActivity implements Runnable {
             //KL_獲取資料
             Getconnection();
             //角背景
-            BuildCorner();
+            //BuildCorner();
             //上方指示道路
             Build_RoadDirectionsPainting();
             //羅盤雷達之指針
@@ -268,11 +270,9 @@ public class MainActivity extends FragmentActivity implements Runnable {
             checkdirectbutton.setOnClickListener(new check_Direct());
             Button autodirectbutton=(Button)findViewById(R.id.autodirect);
             autodirectbutton.setOnClickListener(new auto_Direct());
-            Button parkingauto=(Button)findViewById(R.id.parkingauto);
-            parkingauto.setOnClickListener(new Parking_auto());
             Button ModeChange=(Button)findViewById(R.id.parkingmode);
             ModeChange.setOnClickListener(new Parking_Mode_Change());
-
+            park_choose();// 選擇停車場
 
             map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
             LatLng latLng=new LatLng(23.696136, 120.534142);
@@ -371,10 +371,8 @@ public class MainActivity extends FragmentActivity implements Runnable {
         getWindow().addContentView(DirectbuttonView, new ViewGroup.LayoutParams(450, 80));
         DirectbuttonView = inflater.inflate(R.layout.check_direct, null);
         DirectbuttonView.setAlpha((float)0.8);//設定透明度
-        getWindow().addContentView(DirectbuttonView, new  FrameLayout.LayoutParams(450, 200, Gravity.CENTER| Gravity.LEFT));
+        getWindow().addContentView(DirectbuttonView, new  FrameLayout.LayoutParams(450, 180, Gravity.CENTER| Gravity.LEFT));
     }
-
-
     public class DirectMapOnclick implements Button.OnClickListener{
         @Override
         public void onClick(View v) {
@@ -406,25 +404,21 @@ public class MainActivity extends FragmentActivity implements Runnable {
             }
         }
     }
-    public class Parking_auto implements Button.OnClickListener{
-        @Override
-        public void onClick(View v) {
-            parkingauto=true;
-            End_Position=new LatLng(23.712313, 120.542941);
-            init_point=new LatLng(23.711891, 120.542352);
-            MaintainNavigation();
-            Test_index = 0;
-            MyHandlerTime.postDelayed(TestTimerRun, 1000);
-        }
-    }
-
-    public static final int resultNum = 0;
+    public static final int resultNum = 0;//用於識別是哪一個Activity回傳資料之ID
+    public static int Park_ID=0;//0為預設
     public class Parking_Mode_Change implements Button.OnClickListener{
         @Override
         public void onClick(View v) {
             if(modechange){
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, ParkingMain.class);
+                //=============================
+                //傳送一個參數給ParkingMain
+                Bundle bundle = new Bundle();
+                bundle.putInt("Park_ID",Park_ID);
+                intent.putExtras(bundle);
+                //===========================
+                //跳至ParkingMain.java然後終結目前的Main
                 startActivityForResult(intent, resultNum);
                 MainActivity.this.finish();
             }else{
@@ -432,7 +426,51 @@ public class MainActivity extends FragmentActivity implements Runnable {
             }
         }
     }
+    //============================選擇停車場====================================
+    public void park_choose(){
+        Button parkingauto=(Button)findViewById(R.id.parkingauto);
+        parkingauto.setOnClickListener(new Parking_auto());
+        registerForContextMenu(parkingauto);
+    }
+    public class Parking_auto implements Button.OnClickListener{
+        @Override
+        public void onClick(View v) {
+            Toast.makeText(MainActivity.this,"請長按!",Toast.LENGTH_SHORT).show();
+        }
+    }
+    @Override
+    public void onCreateContextMenu(ContextMenu menu,View view, ContextMenu.ContextMenuInfo menuInfo){
+        MenuInflater menuInflater=getMenuInflater();
+        menuInflater.inflate(R.menu.park_choose,menu);
+    }
+    @Override
+    public boolean onContextItemSelected(MenuItem item){
+        switch(item.getItemId()){
+            case R.id.park1:
 
+                parkingauto=true;
+                End_Position=new LatLng(23.712313, 120.542941);
+                init_point=new LatLng(23.711891, 120.542352);
+                MaintainNavigation();
+                Test_index = 0;
+                MyHandlerTime.postDelayed(TestTimerRun, 1000);
+                Park_ID=1;
+                break;
+            case R.id.park2:
+                Park_ID=2;
+                break;
+            case R.id.park3:
+                Park_ID=3;
+                break;
+            case R.id.park4:
+                Park_ID=4;
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
+    }
+    //=================================================================
     //模擬導航所需之Timer設定
     private final Runnable TestTimerRun = new Runnable()
     {
@@ -1092,24 +1130,6 @@ public class MainActivity extends FragmentActivity implements Runnable {
         }
     };
 
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-
-        int base = Menu.FIRST;
-
-        MenuItem item1 =menu.add(base, base, base, "1.導航");
-        MenuItem item2 =menu.add(base, base+1, base+1,"2.尋找藍芽配對");
-        MenuItem item3 =menu.add(base, base+2, base+2,"3.開放藍芽被搜尋");
-        MenuItem item4 =menu.add(base, base+3, base+3,"4經緯度導航Demo_數值輸入");
-        MenuItem item5 =menu.add(base, base+4, base+4,"5.經緯度導航Demo_地圖點擊");
-        MenuItem item6 =menu.add(base, base+5, base+5,"6.AR設定");
-        MenuItem item7 =menu.add(base, base+6, base+6,"7.退出測試模式");
-
-        return true;
-    }
 
     //case_3
     private EditText edit_1,edit_2,edit_3,edit_4;
